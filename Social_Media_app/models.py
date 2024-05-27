@@ -10,6 +10,7 @@ class Post(models.Model):
     tag=models.TextField()
     posted_at=models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
 
 class Comment(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
@@ -19,4 +20,7 @@ class Comment(models.Model):
 class Like(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     post=models.ForeignKey(Post,on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user','post')
     

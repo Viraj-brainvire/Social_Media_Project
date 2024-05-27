@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'Social_Media.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Social_Media',
+        'NAME': 'Social_Media1',
         'USER':'postgres',
         'PASSWORD':'Vc@25072003',
         'HOST':'localhost',
@@ -89,7 +89,7 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
 
     ],
@@ -146,3 +146,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND ="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER ="virajj583@gmail.com"
+EMAIL_HOST_PASSWORD="qearxobesdzuawfa"
+EMAIL_USE_SSL=False

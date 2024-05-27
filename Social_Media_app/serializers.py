@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework import serializers , validators
 from django.contrib.auth.models import User
 from .models import Post,Like,Comment
 # from .models import 
@@ -38,13 +38,31 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model= Like
+        model= Comment
         fields='__all__'
 
 class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model= Comment
+        model= Like
         fields='__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('user','post'),
+                message=('Already liked')
+            )
+        ]
+    
+    # filterset_fields=['user','post']
 
-       
+    # def create(self, validated_data):
+        
+    #     user = self.context['request'].user
+    #     post = validated_data.get('post')
+    #     # context ={'user':user,'post':post}
+    #     if Like.objects.filter(user=user, post=post).exists():
+    #         raise serializers.ValidationError("Already Liked")
+    #     like = Like.objects.create(user=user, post=post)
+    #     return like
+        
