@@ -97,7 +97,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_FILTER_BACKENDS':[
-        'django_filters.rest_framework.DjangoFilterBackend'
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter'
     ],
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning'
     # 'DEFAULT_VERSION':'v1.0',
@@ -152,5 +153,5 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER ="virajj583@gmail.com"
-EMAIL_HOST_PASSWORD="qearxobesdzuawfa"
+EMAIL_HOST_PASSWORD="ctrcysqexvriqivg"
 EMAIL_USE_SSL=False
