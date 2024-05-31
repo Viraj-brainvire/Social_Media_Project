@@ -1,6 +1,9 @@
 from rest_framework import serializers , validators
 from django.contrib.auth.models import User
 from .models import Post,Like,Comment
+from rest_framework.authtoken.models import Token
+from django.core.mail import EmailMessage
+from django.conf import settings
 # from .models import 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -23,6 +26,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(email =self.validated_data['email']).exists():
             raise serializers.ValidationError({'error':'Email Already Exist'})
         
+        email= EmailMessage("Registration in Social Media App",f"Congrtulations {self.validated_data['first_name']}, You have successfully registered in the Application ",
+        settings.EMAIL_HOST_USER,[self.validated_data['email']])
+        email.send()
         account = User(username = self.validated_data['username'],email=self.validated_data['email'])
         account.set_password(password)
         account.save()
@@ -30,10 +36,23 @@ class RegisterSerializer(serializers.ModelSerializer):
         return account
         
 class PostSerializer(serializers.ModelSerializer):
-
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),write_only=True)
+    likescount = serializers.SerializerMethodField()
+    commentscount=serializers.SerializerMethodField()
     class Meta:
         model= Post
-        fields='__all__'
+        fields=['id','title','content','image','tag','posted_at','updated_at','likescount','commentscount','user']
+
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        data['user'] = user.id
+        return super().to_internal_value(data)
+    
+    def get_likescount(self, obj):
+        return obj.post_like.count()
+    
+    def get_commentscount(self,obj):
+        return obj.post_comment.count()
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -54,6 +73,12 @@ class LikeSerializer(serializers.ModelSerializer):
                 message=('Already liked')
             )
         ]
+    
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        mutable_data=data.copy()
+        mutable_data['user'] = user.id
+        return super().to_internal_value(mutable_data)
     
     # filterset_fields=['user','post']
 
