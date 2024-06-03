@@ -19,12 +19,12 @@ class Post(models.Model):
         
 
 class Comment(models.Model):
-    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
     post=models.ForeignKey(Post,on_delete=models.CASCADE ,related_name="post_comment")
     text=models.TextField()
 
 class Like(models.Model):
-    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
     post=models.ForeignKey(Post,on_delete=models.CASCADE ,related_name="post_like")
 
     class Meta:

@@ -39,19 +39,9 @@ class UserSerializer(serializers.ModelSerializer):
         model=CustomUser
         exclude=['password','is_superuser','is_staff','date_joined','phone_number','groups','user_permissions']
 class PostCreateSerializer(serializers.ModelSerializer):
-    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),write_only=True)
-    likescount = serializers.SerializerMethodField()
-    commentscount=serializers.SerializerMethodField()
-    # user=UserSerializer()
     class Meta:
         model= Post
-        fields=['id','title','content','image','tag','posted_at','updated_at','likescount','commentscount','user']
-    
-    def get_likescount(self, obj):
-        return obj.post_like.count()
-    
-    def get_commentscount(self,obj):
-        return obj.post_comment.count()
+        fields=['id','title','content','image','tag','posted_at','updated_at','user']
     
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
@@ -78,11 +68,10 @@ class CommentSerializer(serializers.ModelSerializer):
         model= Comment
         fields='__all__'
 
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        mutable_data=data.copy()
-        mutable_data['user'] = user.id
-        return super().to_internal_value(mutable_data)
+    def create(self, validated_data):
+        validated_data['user'] = self.context.get('user')
+        print(validated_data)
+        return super().create(validated_data)
 
 class LikeSerializer(serializers.ModelSerializer):
 
@@ -97,11 +86,15 @@ class LikeSerializer(serializers.ModelSerializer):
             )
         ]
     
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        mutable_data=data.copy()
-        mutable_data['user'] = user.id
-        return super().to_internal_value(mutable_data)
+    def create(self, validated_data):
+        validated_data['user'] = self.context.get('user')
+        print(validated_data)
+        return super().create(validated_data)
+    # def to_internal_value(self, data):
+    #     user = Token.objects.get(key=self.context["request"].auth.key).user
+    #     mutable_data=data.copy()
+    #     mutable_data['user'] = user.id
+    #     return super().to_internal_value(mutable_data)
     
 
         # extra_kwargs={"password":{'write_only':True}}
