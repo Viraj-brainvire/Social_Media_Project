@@ -1,6 +1,6 @@
 from django.urls import path , include
 from . import views
-from .views import Registerview 
+from .views import Registerview ,loginview ,logout_view,remove_like
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 
@@ -11,9 +11,9 @@ router.register(r'like',views.Likeview,basename='Like')
 
 urlpatterns = [
     path('',views.Home,name='Home'),
-    path('login/',obtain_auth_token,name='login'),
+    path('login/',loginview.as_view(),name='login'),
     path('register/',Registerview.as_view(),name='Register'),
-    path('logout/',views.logout_view,name='logout'),
+    path('logout/',logout_view.as_view(),name='logout'),
     path('',include(router.urls)),
-    path('Unlike/',views.Remove_like,name='Unlike'),
+    path('Unlike/',remove_like.as_view(),name='Unlike'),
 ]

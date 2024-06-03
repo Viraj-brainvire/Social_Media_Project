@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'Social_Media_app',
     'rest_framework',
     'rest_framework.authtoken',
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [
@@ -81,7 +82,7 @@ WSGI_APPLICATION = 'Social_Media.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Social_Media1',
+        'NAME': 'SocialMedia3',
         'USER':'postgres',
         'PASSWORD':'Vc@25072003',
         'HOST':'localhost',
@@ -138,6 +139,12 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+AUTH_USER_MODEL = 'Social_Media_app.CustomUser'
+
+PHONENUMBER_DEFAULT_REGION='IN'
+
+
 
 
 # Static files (CSS, JavaScript, Images)

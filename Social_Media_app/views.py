@@ -3,13 +3,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.views import APIView 
-from .serializers import RegisterSerializer , PostSerializer , LikeSerializer , CommentSerializer
+from .serializers import *
 from rest_framework import status , generics
 from rest_framework.authtoken.models import Token
 from .models import *
 from rest_framework.filters import SearchFilter
 from django.core.mail import send_mail,EmailMessage
-# from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 from rest_framework.throttling import UserRateThrottle
 # Create your views here.
@@ -20,16 +20,31 @@ class OncePerDayUserThrottle(UserRateThrottle):
 def Home(request):
     return Response({'message':'HelloWorld'},status=status.HTTP_200_OK)
 
+class loginview(APIView):
+    permission_classes=[AllowAny]
+    def post(self , request):       
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request,username=username,password=password)
+        if user is not None:
+            token ,created = Token.objects.get_or_create(user=user)
+            return Response({"token":token.key},status=status.HTTP_200_OK)
+        return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
 # @api_view(['POST',])
-def logout_view(request):
-    if request.method == 'POST':
+class logout_view(generics.DestroyAPIView):
+    def delete(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         return Response({'message':'Deleted'},status=status.HTTP_200_OK)
 
+        
 class Registerview(generics.CreateAPIView):
     permission_classes=[AllowAny]  
     throttle_classes=[OncePerDayUserThrottle]
-    queryset=User.objects.all()
+    queryset=CustomUser.objects.all()
     serializer_class=RegisterSerializer
     
     # def post(self,request):        
@@ -46,6 +61,12 @@ class Postview(viewsets.ModelViewSet):
     throttle_classes=[OncePerDayUserThrottle]
     filterset_fields=['user']
     search_fields=['title','tag']
+
+    def get_serializer_context(self):
+        context = super(Postview, self).get_serializer_context()
+        context.update({"user": self.request.user})
+        return context
+
 
 class Commentview(viewsets.ModelViewSet):
     queryset=Comment.objects.all()
@@ -68,12 +89,8 @@ class Likeview(viewsets.ModelViewSet):
     serializer_class=LikeSerializer
     filterset_fields=['user','post']
 
-
-@api_view(['DELETE',])
-def Remove_like(request):
-
-    if request.method == 'DELETE':
-        # serializer = LikeSerializer(data=request.data)
+class remove_like(generics.DestroyAPIView):
+    def delete(self, request, *args, **kwargs):
         user_id = Token.objects.get(key=request.auth.key).user_id
         if int(user_id)== int(request.data.get('user')):
             if Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).exists():
@@ -83,3 +100,6 @@ def Remove_like(request):
                 return Response("Already didn't like the post")
         else:
             return Response("Not a Valid user Id")
+
+
+        

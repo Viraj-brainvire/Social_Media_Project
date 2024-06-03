@@ -1,6 +1,6 @@
 from rest_framework import serializers , validators
 from django.contrib.auth.models import User
-from .models import Post,Like,Comment
+from .models import *
 from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
@@ -10,8 +10,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     password_confirmation = serializers.CharField(style={'input_type':'password'},write_only=True)
 
     class Meta:
-        model = User
-        fields = ['first_name','last_name','username','email','password','password_confirmation']
+        model = CustomUser
+        fields = ['first_name','last_name','username','email','password','password_confirmation','phone_number']
         extra_kwargs={
             'password':{'write_only':True}
         }
@@ -23,36 +23,45 @@ class RegisterSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError({'error':'password and password2 are not same'})
         
-        if User.objects.filter(email =self.validated_data['email']).exists():
+        if CustomUser.objects.filter(email =self.validated_data['email']).exists():
             raise serializers.ValidationError({'error':'Email Already Exist'})
         
         email= EmailMessage("Registration in Social Media App",f"Congrtulations {self.validated_data['first_name']}, You have successfully registered in the Application ",
         settings.EMAIL_HOST_USER,[self.validated_data['email']])
         email.send()
-        account = User(username = self.validated_data['username'],email=self.validated_data['email'])
+        account = CustomUser(username = self.validated_data['username'],email=self.validated_data['email'],first_name=self.validated_data['first_name'],last_name=self.validated_data['last_name'],phone_number=self.validated_data['phone_number'])
         account.set_password(password)
         account.save()
 
         return account
         
 class PostSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),write_only=True)
+    # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),write_only=True)
     likescount = serializers.SerializerMethodField()
     commentscount=serializers.SerializerMethodField()
+    user=serializers.SerializerMethodField()
     class Meta:
         model= Post
         fields=['id','title','content','image','tag','posted_at','updated_at','likescount','commentscount','user']
-
-    def to_internal_value(self, data):
-        user = Token.objects.get(key=self.context["request"].auth.key).user
-        data['user'] = user.id
-        return super().to_internal_value(data)
     
     def get_likescount(self, obj):
         return obj.post_like.count()
     
     def get_commentscount(self,obj):
         return obj.post_comment.count()
+    
+    def get_user(self,obj):
+        return self.context.get('user').id
+    
+    def create(self, validated_data):
+        validated_data['user'] = self.context.get('user')
+        return super().create(validated_data)
+    
+    # def to_internal_value(self, data):
+    #     user = Token.objects.get(key=self.context["request"].auth.key).user
+    #     mutable_data=data.copy()
+    #     mutable_data['user'] = user.id
+    #     return super().to_internal_value(mutable_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -80,15 +89,20 @@ class LikeSerializer(serializers.ModelSerializer):
         mutable_data['user'] = user.id
         return super().to_internal_value(mutable_data)
     
-    # filterset_fields=['user','post']
+# class UserSerializer(serializers.ModelSerializer):
 
-    # def create(self, validated_data):
-        
-    #     user = self.context['request'].user
-    #     post = validated_data.get('post')
-    #     # context ={'user':user,'post':post}
-    #     if Like.objects.filter(user=user, post=post).exists():
-    #         raise serializers.ValidationError("Already Liked")
-    #     like = Like.objects.create(user=user, post=post)
-    #     return like
+#     class Meta:
+#         model=User
+#         fields=['username','password']
+#         extra_kwargs={"password":{'write_only':True}}
+
+#     def create(self, validated_data):
+#         user = User(
+#             username=validated_data['username'],
+#             email=validated_data['email']
+#         )
+#         user.set_password(validated_data['password'])
+#         user.save()
+#         return user
+
         
