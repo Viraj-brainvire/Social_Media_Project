@@ -34,11 +34,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return account
         
-class PostSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CustomUser
+        exclude=['password','is_superuser','is_staff','date_joined','phone_number','groups','user_permissions']
+class PostCreateSerializer(serializers.ModelSerializer):
     # user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),write_only=True)
     likescount = serializers.SerializerMethodField()
     commentscount=serializers.SerializerMethodField()
-    user=serializers.SerializerMethodField()
+    # user=UserSerializer()
     class Meta:
         model= Post
         fields=['id','title','content','image','tag','posted_at','updated_at','likescount','commentscount','user']
@@ -49,20 +53,25 @@ class PostSerializer(serializers.ModelSerializer):
     def get_commentscount(self,obj):
         return obj.post_comment.count()
     
-    def get_user(self,obj):
-        return self.context.get('user').id
-    
     def create(self, validated_data):
         validated_data['user'] = self.context.get('user')
+        print(validated_data)
         return super().create(validated_data)
+
+class PostListingSerializer(serializers.ModelSerializer):
+
+    likescount = serializers.SerializerMethodField()
+    commentscount=serializers.SerializerMethodField()
+    user=UserSerializer()
+    class Meta:
+        model= Post
+        fields=['id','title','content','image','tag','posted_at','updated_at','likescount','commentscount','user']
+
+    def get_likescount(self, obj):
+        return obj.post_like.count()
     
-    # def to_internal_value(self, data):
-    #     user = Token.objects.get(key=self.context["request"].auth.key).user
-    #     mutable_data=data.copy()
-    #     mutable_data['user'] = user.id
-    #     return super().to_internal_value(mutable_data)
-
-
+    def get_commentscount(self,obj):
+        return obj.post_comment.count()
 class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -94,12 +103,8 @@ class LikeSerializer(serializers.ModelSerializer):
         mutable_data['user'] = user.id
         return super().to_internal_value(mutable_data)
     
-# class UserSerializer(serializers.ModelSerializer):
 
-#     class Meta:
-#         model=User
-#         fields=['username','password']
-#         extra_kwargs={"password":{'write_only':True}}
+        # extra_kwargs={"password":{'write_only':True}}
 
 #     def create(self, validated_data):
 #         user = User(

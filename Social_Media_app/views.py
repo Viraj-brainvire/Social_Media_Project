@@ -57,15 +57,21 @@ class Registerview(generics.CreateAPIView):
 
 class Postview(viewsets.ModelViewSet):
     queryset=Post.objects.all()
-    serializer_class=PostSerializer
+    serializer_class=PostCreateSerializer
     throttle_classes=[OncePerDayUserThrottle]
     filterset_fields=['user']
     search_fields=['title','tag']
 
     def get_serializer_context(self):
-        context = super(Postview, self).get_serializer_context()
-        context.update({"user": self.request.user})
+        context = super().get_serializer_context()
+        user = Token.objects.get(key=self.request.auth.key).user
+        context.update({'user':user})
         return context
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PostListingSerializer
+        return PostCreateSerializer
 
 
 class Commentview(viewsets.ModelViewSet):
