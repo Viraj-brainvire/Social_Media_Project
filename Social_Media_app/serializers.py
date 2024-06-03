@@ -1,5 +1,4 @@
 from rest_framework import serializers , validators
-from django.contrib.auth.models import User
 from .models import *
 from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
@@ -69,6 +68,12 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model= Comment
         fields='__all__'
+
+    def to_internal_value(self, data):
+        user = Token.objects.get(key=self.context["request"].auth.key).user
+        mutable_data=data.copy()
+        mutable_data['user'] = user.id
+        return super().to_internal_value(mutable_data)
 
 class LikeSerializer(serializers.ModelSerializer):
 
