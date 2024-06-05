@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "phonenumber_field",
+    "django_filters"
 ]
 
 MIDDLEWARE = [
@@ -103,10 +104,10 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter'
     ],
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning'
-    # 'DEFAULT_VERSION':'v1.0',
-    # 'ALLOWED_VERSION': {'v1.0','v2.0'},
-    # 'VERSION_PARAM':'version',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 2
+
 
 }
 

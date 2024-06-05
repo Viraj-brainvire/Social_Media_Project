@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
 class Post(models.Model):
     title=models.CharField(max_length=100)
     content=models.TextField()
-    image=models.ImageField(upload_to="./Social_Media_app/Images")
+    image=models.ImageField(upload_to="./Social_Media_app/Images",null=True)
     tag=models.TextField()
     posted_at=models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

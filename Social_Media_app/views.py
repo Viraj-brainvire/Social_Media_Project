@@ -4,12 +4,14 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.views import APIView 
 from .serializers import *
-from rest_framework import status , generics
+from rest_framework import status , generics ,serializers
 from rest_framework.authtoken.models import Token
 from .models import *
 from rest_framework.filters import SearchFilter
 from django.core.mail import send_mail,EmailMessage
 from django.contrib.auth import authenticate
+from django_filters.rest_framework import DjangoFilterBackend 
+from rest_framework import filters
 
 from rest_framework.throttling import UserRateThrottle
 # Create your views here.
@@ -29,31 +31,40 @@ class loginview(APIView):
         if user is not None:
             token ,created = Token.objects.get_or_create(user=user)
             return Response({"token":token.key},status=status.HTTP_200_OK)
-        return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST)
-    
-
-
+        return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST) 
 
 # @api_view(['POST',])
 class logout_view(generics.DestroyAPIView):
     def delete(self, request, *args, **kwargs):
         request.user.auth_token.delete()
         return Response({'message':'Deleted'},status=status.HTTP_200_OK)
-
-        
+      
 class Registerview(generics.CreateAPIView):
     permission_classes=[AllowAny]  
     throttle_classes=[OncePerDayUserThrottle]
     queryset=CustomUser.objects.all()
     serializer_class=RegisterSerializer
-              
 
+class has_imagefilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+
+        has_image = request.query_params.get('has_image')
+        if has_image is not None:
+            if has_image.lower() == 'true':
+                queryset = queryset.exclude(image__isnull=True).exclude(image='')
+            elif has_image.lower() == 'false':
+                queryset = queryset.filter(image='')
+            else:
+                raise serializers.ValidationError('expected True or false')
+        return queryset
 class Postview(viewsets.ModelViewSet):
-    queryset=Post.objects.all()
-    serializer_class=PostCreateSerializer
+    # permission_classes=[AllowAny]
+    queryset=Post.objects.prefetch_related('post_like','post_comment').all()
+    # serializer_class=PostCreateSerializer
     throttle_classes=[OncePerDayUserThrottle]
     filterset_fields=['user']
     search_fields=['title','tag']
+    filter_backends=[has_imagefilter,DjangoFilterBackend,filters.SearchFilter]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -62,7 +73,7 @@ class Postview(viewsets.ModelViewSet):
         return context
     
     def get_serializer_class(self):
-        if self.action in ['listing_Post']:
+        if self.action in ['listing_Post','list','retrieve']:
             return PostListingSerializer
         return PostCreateSerializer
     
@@ -70,25 +81,32 @@ class Postview(viewsets.ModelViewSet):
     def listing_Post(self,request):
         queryset= Post.objects.all()
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.data,status=status.HTTP_200_OK)     
 
+    
+    # def get_queryset(self):
+    #     queryset = Post.objects.all()
+    #     post = self.request.query_pararms.get('post')
+    #     if post is not None:
+    #         queryset = queryset.filter(PostListingSerializer__post=post)
+    #     return queryset
+    
+
+
+    
         
-
-
 
 class Commentview(viewsets.ModelViewSet):
     queryset=Comment.objects.all()
     serializer_class=CommentSerializer
     filterset_fields=['user','post']
-
-
-    
+  
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = Token.objects.get(key=self.request.auth.key).user
         context.update({'user':user})
         return context
-
+    
 class Likeview(viewsets.ModelViewSet):
     queryset=Like.objects.all()
     serializer_class=LikeSerializer
@@ -102,15 +120,13 @@ class Likeview(viewsets.ModelViewSet):
 
 class remove_like(generics.DestroyAPIView):
     def delete(self, request, *args, **kwargs):
-        user_id = Token.objects.get(key=request.auth.key).user_id
-        if int(user_id)== int(request.data.get('user')):
-            if Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).exists():
-                Like.objects.filter(user=request.data.get('user'), post=request.data.get('post')).delete()
-                return Response({'message':'Unlike'},status=status.HTTP_200_OK)
-            else:
-                return Response("Already didn't like the post")
+        user_id = Token.objects.get(key=request.auth.key).user_id        
+        if Like.objects.filter(user=user_id, post=request.data.get('post')).exists():
+            Like.objects.filter(user=user_id, post=request.data.get('post')).delete()
+            return Response({'message':'Unlike'},status=status.HTTP_200_OK)
         else:
-            return Response("Not a Valid user Id")
+            return Response("Already didn't like the post")
+        
 
 
         

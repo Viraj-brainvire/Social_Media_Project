@@ -39,6 +39,7 @@ class UserSerializer(serializers.ModelSerializer):
         model=CustomUser
         exclude=['password','is_superuser','is_staff','date_joined','phone_number','groups','user_permissions']
 class PostCreateSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     class Meta:
         model= Post
         fields=['id','title','content','image','tag','posted_at','updated_at','user']
