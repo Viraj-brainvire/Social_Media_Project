@@ -11,6 +11,7 @@ router.register(r'like',views.Likeview,basename='Like')
 
 urlpatterns = [
     path('',views.Home,name='Home'),
+    path('home/',views.home,name='home1'),
     path('login/',loginview.as_view(),name='login'),
     path('register/',Registerview.as_view(),name='Register'),
     path('logout/',logout_view.as_view(),name='logout'),

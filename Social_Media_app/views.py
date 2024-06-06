@@ -12,6 +12,8 @@ from django.core.mail import send_mail,EmailMessage
 from django.contrib.auth import authenticate
 from django_filters.rest_framework import DjangoFilterBackend 
 from rest_framework import filters
+from .pagination import CustomPagination
+from django.http import HttpResponse
 
 from rest_framework.throttling import UserRateThrottle
 # Create your views here.
@@ -33,7 +35,7 @@ class loginview(APIView):
             return Response({"token":token.key},status=status.HTTP_200_OK)
         return Response({'error':'Invalid credentials'},status=status.HTTP_400_BAD_REQUEST) 
 
-# @api_view(['POST',])
+
 class logout_view(generics.DestroyAPIView):
     def delete(self, request, *args, **kwargs):
         request.user.auth_token.delete()
@@ -60,11 +62,11 @@ class has_imagefilter(filters.BaseFilterBackend):
 class Postview(viewsets.ModelViewSet):
     # permission_classes=[AllowAny]
     queryset=Post.objects.prefetch_related('post_like','post_comment').all()
-    # serializer_class=PostCreateSerializer
     throttle_classes=[OncePerDayUserThrottle]
     filterset_fields=['user']
     search_fields=['title','tag']
     filter_backends=[has_imagefilter,DjangoFilterBackend,filters.SearchFilter]
+    pagination_class=CustomPagination
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -75,25 +77,13 @@ class Postview(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ['listing_Post','list','retrieve']:
             return PostListingSerializer
-        return PostCreateSerializer
+        return PostCreateSerializer2
     
     @action(detail=False, methods=['get'])
     def listing_Post(self,request):
         queryset= Post.objects.all()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)     
-
-    
-    # def get_queryset(self):
-    #     queryset = Post.objects.all()
-    #     post = self.request.query_pararms.get('post')
-    #     if post is not None:
-    #         queryset = queryset.filter(PostListingSerializer__post=post)
-    #     return queryset
-    
-
-
-    
         
 
 class Commentview(viewsets.ModelViewSet):
@@ -128,5 +118,12 @@ class remove_like(generics.DestroyAPIView):
             return Response("Already didn't like the post")
         
 
-
+def home(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    
+    return HttpResponse("Welcome Home<br>You are visiting from: {}".format(ip))
         

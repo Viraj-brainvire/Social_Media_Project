@@ -48,6 +48,25 @@ class PostCreateSerializer(serializers.ModelSerializer):
         validated_data['user'] = self.context.get('user')
         print(validated_data)
         return super().create(validated_data)
+    
+class PostCreateSerializer2(serializers.Serializer):
+    title=serializers.CharField(max_length=100)
+    content=serializers.CharField()
+    image=serializers.ImageField(required=False)
+    tag=serializers.CharField()
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def create(self,validated_data):
+        return Post.objects.create(**validated_data)
+    
+    def update(self,validated_data,instance):
+        instance.title = validated_data.get('title',instance.title)
+        instance.content = validated_data.get('content',instance.content)
+        instance.image = validated_data.get('image',instance.image)
+        instance.tag = validated_data.get('tag',instance.tag)
+        instance.user = validated_data.get('user',instance.user)
+        instance.save()
+        return instance
 
 class PostListingSerializer(serializers.ModelSerializer):
 
@@ -97,16 +116,4 @@ class LikeSerializer(serializers.ModelSerializer):
     #     mutable_data['user'] = user.id
     #     return super().to_internal_value(mutable_data)
     
-
-        # extra_kwargs={"password":{'write_only':True}}
-
-#     def create(self, validated_data):
-#         user = User(
-#             username=validated_data['username'],
-#             email=validated_data['email']
-#         )
-#         user.set_password(validated_data['password'])
-#         user.save()
-#         return user
-
         
