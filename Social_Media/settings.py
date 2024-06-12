@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     "phonenumber_field",
-    "django_filters"
+    "django_filters",
+    'import_export'
 ]
 
 MIDDLEWARE = [
@@ -146,7 +147,7 @@ AUTH_USER_MODEL = 'Social_Media_app.CustomUser'
 PHONENUMBER_DEFAULT_REGION='IN'
 
 
-
+STATIC_ROOT = 'DATA'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -165,3 +166,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER ="virajj583@gmail.com"
 EMAIL_HOST_PASSWORD=""
 EMAIL_USE_SSL=False
+
+MAX_UPLOAD_SIZE = '25613'

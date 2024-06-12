@@ -15,7 +15,7 @@ class Post(models.Model):
     tag=models.TextField()
     posted_at=models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE,related_name='user_post', related_query_name='user_post',null=True,blank=True)
         
 
 class Comment(models.Model):

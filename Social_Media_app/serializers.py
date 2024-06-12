@@ -59,7 +59,7 @@ class PostCreateSerializer2(serializers.Serializer):
     def create(self,validated_data):
         return Post.objects.create(**validated_data)
     
-    def update(self,validated_data,instance):
+    def update(self,instance,validated_data):
         instance.title = validated_data.get('title',instance.title)
         instance.content = validated_data.get('content',instance.content)
         instance.image = validated_data.get('image',instance.image)
