@@ -11,7 +11,7 @@ from .models import Post
 
 
 class PostForm(forms.ModelForm):
-    image=forms.FileField(validators=[FileExtensionValidator(allowed_extensions=['jpeg','pdf'])])
+    # image=forms.FileField(validators=[FileExtensionValidator(allowed_extensions=['jpeg','pdf'])])
 
     class Meta:
         model = Post
