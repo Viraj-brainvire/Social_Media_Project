@@ -14,7 +14,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from .pagination import CustomPagination
 from django.http import HttpResponse
-
 from rest_framework.throttling import UserRateThrottle
 # Create your views here.
 class OncePerDayUserThrottle(UserRateThrottle):

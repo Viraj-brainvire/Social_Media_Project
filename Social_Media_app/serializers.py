@@ -3,6 +3,7 @@ from .models import *
 from rest_framework.authtoken.models import Token
 from django.core.mail import EmailMessage
 from django.conf import settings
+from Social_Media.celery import send_mail
 # from .models import 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -14,7 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs={
             'password':{'write_only':True}
         }
-
+    
     def save(self):
         password=self.validated_data['password']
         password2=self.validated_data['password_confirmation']
@@ -25,9 +26,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         if CustomUser.objects.filter(email =self.validated_data['email']).exists():
             raise serializers.ValidationError({'error':'Email Already Exist'})
         
-        email= EmailMessage("Registration in Social Media App",f"Congrtulations {self.validated_data['first_name']}, You have successfully registered in the Application ",
-        settings.EMAIL_HOST_USER,[self.validated_data['email']])
-        email.send()
+        # email= EmailMessage("Registration in Social Media App",f"Congrtulations {self.validated_data['first_name']}, You have successfully registered in the Application ",
+        # settings.EMAIL_HOST_USER,[self.validated_data['email']])
+        # email.send()
+        send_mail.delay(self.validated_data['first_name'],self.validated_data['email'])
         account = CustomUser(username = self.validated_data['username'],email=self.validated_data['email'],first_name=self.validated_data['first_name'],last_name=self.validated_data['last_name'],phone_number=self.validated_data['phone_number'])
         account.set_password(password)
         account.save()

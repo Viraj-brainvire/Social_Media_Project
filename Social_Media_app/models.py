@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from os.path import splitext
 
 def validate_brainvire_mail(value):
-    if "@brainvire.com" in value:
+    if "@brainvire.com" and "@gmail.com" in value:
         return value
     else:
         raise ValidationError("This field accepts mail id of brainvire only")

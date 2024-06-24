@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,7 +42,12 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "phonenumber_field",
     "django_filters",
-    'import_export'
+    'import_export',
+    'celery',
+    'django_celery_beat',
+    'django_crontab',
+    'django_celery_results',
+    # 'kombu.transport.django'
 ]
 
 MIDDLEWARE = [
@@ -56,6 +61,7 @@ MIDDLEWARE = [
     
 
 ]
+
 
 ROOT_URLCONF = 'Social_Media.urls'
 
@@ -76,7 +82,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Social_Media.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -136,7 +141,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -164,7 +169,18 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER ="virajj583@gmail.com"
-EMAIL_HOST_PASSWORD=""
+EMAIL_HOST_PASSWORD="uthv uyvc xcqw mwzy"
 EMAIL_USE_SSL=False
+DEFAULT_FROM_EMAIL = 'Celery <virajj583@gmail.com>'
 
 MAX_UPLOAD_SIZE = '25613'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# BROKER_URL = os.environ.get('RABBITMQ_URL', 'amqp://guest:guest@localhost:5672/')
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_ACCEPT_CONENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIME_ZONE = 'Asia/kolkata'
+CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
